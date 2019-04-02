@@ -1,0 +1,10 @@
+<header class="header">
+  <% var headerNavhref = '', title = ''; %>
+  <%if (sess.pageName =='products') {%>
+    <% headerNavhref = '/products/wish/list/1', title = '장바구니'; %>
+  <%} else { %>
+    <% headerNavhref = '/products/list/1', title = '프로덕트'; %>
+  <%} %>
+  <a href="/">HOME</a>
+  <a href="<%= headerNavhref %>"><%= title %></a> 
+</header>

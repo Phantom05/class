@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <% var headObj = { cssName:"products",title:"Class101 - Products"} %>
+  <%- include('../common/head.ejs',headObj) %>
+</head>
+
+<body>
+  <% let numWithCommas =(x)=> (x == 0) ? 0 : x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); %>
+  <div id="App">
+    <%- include('../common/header.ejs',{headerName:"Class101 Products"}) %>
+    <div class="wrapper">
+      <div class="page__wapper" id="pageWapper">
+        <h1 class="page__title">Products</h1>
+        <form action="" method="POST" id="cartForm">
+          <div class="page__row">
+
+            <% sess.productItems.sort((a,b)=> a.score - b.score).forEach((x,y)=>{ %>
+            <div class="page__item_box col-lg-2 col-md-4 col-sm-6 col-xs-12">
+              <div class="product__card">
+
+                <div class="product__img_box">
+                  <img src="<%= sess.productItems[y].coverImage %> " alt="product image" class="product__img">
+                </div>
+
+                <div class="product__info_box">
+                  <p class="product__title"><%= sess.productItems[y].title %></p>
+                  <p class="product__price"><%= numWithCommas(sess.productItems[y].price )%> 원</p>
+                </div>
+
+                <div class="product__cart_box">
+
+                  <% if(sess.cart.includes(sess.productItems[y].id)) {%>
+                  <label for="<%= sess.productItems[y].id %>" class="product__cart_label active">장바구니에서 빼기</label>
+                  <input type="checkbox" name="<%= sess.productItems[y].id %>" id="<%= sess.productItems[y].id %>"
+                    data-name="cart" checked>
+                  <% } else{ %>
+                  <label for="<%= sess.productItems[y].id %>" class="product__cart_label">장바구니에 담기</label>
+                  <input type="checkbox" name="<%= sess.productItems[y].id %>" id="<%= sess.productItems[y].id %>">
+                  <% } %>
+                </div>
+
+              </div>
+            </div>
+            <% }) %>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <% var footObj = { scriptName:"products" } %>
+  <%- include('../common/foot.ejs',footObj) %>
+
+  <script>
+    document.getElementById('cartForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+    })
+    document.getElementById('cartForm').addEventListener('change', function (e) {
+      let Async1 = () => {
+        return new Promise(function (resolve, reject) {
+          let resArr = [];
+          Array.from(document.querySelectorAll('#cartForm  *')).forEach(x => {
+            if (x.tagName == 'INPUT') {
+              if (x.checked) {
+                if (x.getAttribute('data-name') != 'cart') resArr.push(x.id) ;
+              } else if((x.getAttribute('data-name') == 'cart')) {
+                  x.setAttribute('data-name', '');
+                  let configJson = {
+                    method: 'delete',
+                    url: '/products/cart/del',
+                    data: {
+                      productId: x.id,
+                    }
+                  }
+                  axios(configJson).then(res => {
+                    console.log(res.data)
+                  })
+                  Array.from(x.parentNode.children).forEach(x => {
+                    if (x.tagName == 'LABEL') {
+                      x.textContent = '장바구니에 담기';
+                      x.classList.remove('active');
+                    }
+                  })
+              }
+            }
+          })
+          resolve(resArr)
+        })
+      }
+
+      let Async2 = (data) => {
+        return new Promise(function (resolve, reject) {
+          if (data.length) {
+            let configJson = {
+              method: 'put',
+              url: '/products/cart',
+              data: {
+                productId: data[0],
+              }
+            }
+            axios(configJson).then(res => {
+                Array.from(document.querySelectorAll('#cartForm  *')).forEach(x => {
+                  if (x.tagName == 'INPUT' && x.id == res.data.productId) {
+                    x.setAttribute('data-name', 'cart');
+                    Array.from(x.parentNode.children).forEach(x => {
+                      if (x.tagName == 'LABEL') {
+                        x.textContent = '장바구니에서 빼기';
+                        x.classList.add('active');
+                      }
+                    })
+                  }
+                })
+                if (res.data.msg) {
+                  let idxArr = Array.from(document.querySelectorAll('#cartForm  *')).filter((x, idx) => {
+                    if (x.tagName == 'INPUT' && x.checked && x.getAttribute('data-name') == 'cart') return x
+                  });
+                  Array.from(idxArr[idxArr.length-1].parentNode.children).forEach(x => {
+                      if (x.tagName == 'LABEL') {
+                        x.textContent = '장바구니에 담기';
+                        x.classList.remove('active');
+                      }
+                       if(x.tagName == 'INPUT'){
+                         x.checked = false;
+                         x.setAttribute('data-name','');
+                       }
+                    });
+
+                  alert(res.data.msg);
+                }
+              })
+              .catch(err => console.log(err))
+          } else {
+            console.log('비었음');
+          }
+          resolve()
+        })
+      }
+      Async1().then(Async2)
+    })
+
+  </script>
+</body>
+
+</html>

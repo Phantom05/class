@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <% var headObj = { cssName:"wishlist",title:"Class101 - Whshlist"} %>
+  <%- include('../common/head.ejs',headObj) %>
+</head>
+
+<body>
+  <% let numWithCommas =(x)=> (x == 0) ? 0 : x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); %>
+  <%- include('../common/header.ejs',{headerName:"Class101 Whshlist"}) %>
+  <div id="App">
+      <div class="wrapper ">
+          <div class="page__wapper" id="pageWapper">
+            <h1 class="page__title">Whshlist</h1>
+            <form action="" id="wishlistForm">
+              <div class="page__row">
+                <%if(sess.cart.length){ %>
+                <% sess.productItems.sort((a,b)=> a.score - b.score).forEach((x,y)=>{ %>
+                <%if(sess.cart.includes(sess.productItems[y].id)){ %>
+                <div class="page__item_box col-lg-2 col-md-4 col-sm-6 col-xs-12">
+                  <div class="wishlist__card">
+      
+                    <div class="wishlist__img_box">
+                      <div class="wishlist__img_inner">
+                        <div class="wishlist__cart_box">
+                          <label for="<%= sess.productItems[y].id %>" class="wishlist__cart_label">구매</label>
+                          <input type="checkbox" name="wishlist" id="<%= sess.productItems[y].id %>">
+                        </div>
+                      </div>
+                      <div class="wishlist__img_inner box">
+                        <img src="<%= sess.productItems[y].coverImage %> " alt="product image" class="wishlist__img">
+                      </div>
+                    </div>
+      
+                    <div class="wishlist__info_box">
+                      <p class="wishlist__title"><%= sess.productItems[y].title %></p>
+                      <p class="wishlist__price">
+                        <span class="price_info"><%= numWithCommas(sess.productItems[y].price )%></span> 원
+                        <input type="number" class="wishlist_number" value="1">
+                        <input type="text" value="<%= sess.productItems[y].price %>" class="priceHidden">
+                        <input type="text" value="<%= sess.productItems[y].availableCoupon %>" class="couponAvail">
+                        <input type="text" value="<%= sess.productItems[y].price %>" class="originPrice">
+                      </p>
+                      <p class="wishlist__sale_info">
+                          <% if(sess.productItems[y].availableCoupon !=false){ %>
+                            할인가능
+                          <% } %>
+                      </p>
+      
+                    </div>
+                  </div>
+                </div>
+                <% } %>
+                <% }) %>
+              </div>
+      
+              <div class="page__row">
+                <div class="page__item_box col-lg-12">
+                  <div class="wishlist__res_box">
+                    <div class="wishlist__res_info" id="wishlistPriceInfo"></div>
+                  </div>
+                </div>
+              </div>
+      
+              <div class="page__row">
+                <div class="page__item_box col-lg-12">
+                  <p>사용 가능한 쿠폰</p>
+                  <select name="" id="wishlistSelect">
+                    <option value="0">쿠폰을 선택하세요</option>
+                    <% coupons.forEach(x=>{ %>
+                    <option value="<%= (x.type=='rate')?x.discountRate:x.discountAmount %>" data-type="<%= x.type %>"><%= x.title %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+      
+              <div class="page__row">
+                <div class="page__item_box col-lg-12">
+                  <input type="submit" value="구매">
+                </div>
+              </div>
+      
+              <% } else {  %>
+              <div class="nodata">
+                장바구니 목록이 비어있습니다.
+              </div>
+              <% } %>
+            </form>
+      
+          </div>
+        </div>
+  </div>
+
+
+  <% var footObj = { scriptName:"wishlist" } %>
+  <%- include('../common/foot.ejs',footObj) %>
+  <script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+      let numWithCommas = (x) => (x == 0) ? 0 : x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      let res = 0;
+      Array.from(document.getElementsByClassName('priceHidden')).forEach(x => {
+        res += +x.value
+      })
+      document.getElementById('wishlistPriceInfo').innerHTML =
+        `상품가격 ${numWithCommas(res)}원 + 배송비 무료 = 주문금액 ${numWithCommas(res)}원`;
+
+
+      // price_info
+      document.getElementById('wishlistSelect').addEventListener('change', function (e) {
+
+        console.log(this.options[this.options.selectedIndex].getAttribute('data-type'));
+        let selectOpt = this.options[this.options.selectedIndex];
+        Array.from(document.querySelectorAll('#wishlistForm *')).forEach(x=>{
+           if(x.classList.contains('couponAvail')){
+             if(x.value.trim() != 'false'){
+
+              Array.from(x.parentElement.children).forEach(x=>{
+                if(x.classList.contains('price_info')){
+                  
+                  let priceValue = +x.textContent.replace(/,/gi, "");
+                  
+                  if(selectOpt.getAttribute('data-type') == 'rate'){
+                    let saleRateKrw = priceValue * +selectOpt.value / 100;
+                    let saleRes = priceValue - saleRateKrw;
+                    x.innerHTML = numWithCommas(saleRes)
+                  }
+
+                  if(selectOpt.getAttribute('data-type') == 'amount'){
+                    console.log(+selectOpt.value,'amount');
+
+                    let saleAmoutKrw = priceValue - +selectOpt.value;
+                    console.log(saleAmoutKrw)
+                    x.innerHTML = numWithCommas(saleAmoutKrw)
+                  }
+                }
+
+                if(x.classList.contains('priceHidden')){
+
+                  if(selectOpt.getAttribute('data-type') == 'rate'){
+                    let hiddenPriceValue= +x.value;
+                    let saleHiddenKrw = hiddenPriceValue * +selectOpt.value / 100;
+                    let saleHiddenRes = hiddenPriceValue - saleHiddenKrw;
+                    x.value = saleHiddenRes
+                  }
+
+                  if(selectOpt.getAttribute('data-type') == 'amount'){
+
+                  }
+
+
+                }
+
+                
+              })
+             }
+           }
+          })
+        
+
+
+      })
+
+
+      document.getElementById('wishlistForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        let selectProduct = Array.from(this.wishlist).filter(x => {
+          return x.checked
+        });
+        if (!selectProduct.length) alert('상품을 선택해주세요.');
+        console.log(selectProduct)
+      })
+
+    });
+  </script>
+</body>
+
+</html>

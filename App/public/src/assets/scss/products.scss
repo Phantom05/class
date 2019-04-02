@@ -1,0 +1,46 @@
+@import './vari';
+@import './mixin';
+
+
+.product__card{
+  position: relative;
+  padding: 15px;
+  background: #77777748;
+  min-height: 250px;
+}
+.product__img_box{
+  width: 100%;
+  margin-bottom: 10px;
+  .product__img{
+    width: 100%;
+    height: 120px;
+  } 
+}
+.product__info_box{
+ @include fontMixin(#fff,14px) ;
+ margin-bottom: 10px;
+  line-height: 16px;
+}
+
+.product__cart_box{
+  @include fontMixin(#fff,14px) ;
+}
+
+.product__cart_label{
+  display: inline-block;
+  border: 1px solid #ececec;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 15px;
+  transition: .5s ease;
+  &:hover{
+    background: #ececec18;
+  }
+
+}
+.product__cart_label.active{
+  background: rgb(3, 77, 90);
+  border: 1px solid rgb(3, 77, 90);
+  
+
+}
