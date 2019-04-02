@@ -46,7 +46,6 @@ router.put('/cart', (req, res, next) => {
   } else {
     res.json(req.body);
   }
-
   console.log(req.session)
 });
 

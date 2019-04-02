@@ -34,10 +34,10 @@
                   <% if(sess.cart.includes(sess.productItems[y].id)) {%>
                   <label for="<%= sess.productItems[y].id %>" class="product__cart_label active">장바구니에서 빼기</label>
                   <input type="checkbox" name="<%= sess.productItems[y].id %>" id="<%= sess.productItems[y].id %>"
-                    data-name="cart" checked>
+                    data-name="cart" checked hidden>
                   <% } else{ %>
                   <label for="<%= sess.productItems[y].id %>" class="product__cart_label">장바구니에 담기</label>
-                  <input type="checkbox" name="<%= sess.productItems[y].id %>" id="<%= sess.productItems[y].id %>">
+                  <input type="checkbox" name="<%= sess.productItems[y].id %>" id="<%= sess.productItems[y].id %>" hidden>
                   <% } %>
                 </div>
 
